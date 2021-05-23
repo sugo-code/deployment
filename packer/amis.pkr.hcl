@@ -5,6 +5,8 @@ locals {
   subnet_id = "subnet-07665accf656cdefc"
 }
 
+#TODO: Use docker instead of two different images
+
 source "amazon-ebs" "nodejs" {
   ami_name      = "${local.name_prefix}-nodejs"
   instance_type = "t2.micro"
