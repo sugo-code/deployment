@@ -38,6 +38,11 @@ build {
   ]
 
   provisioner "shell" {
+    except = ["amazon-ebs.influxdb"]
+    script = "codedeploy.sh"
+  }
+
+  provisioner "shell" {
     only = ["amazon-ebs.nodejs"]
     script = "nodejs.sh"
   }
