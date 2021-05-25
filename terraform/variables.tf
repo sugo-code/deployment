@@ -17,3 +17,9 @@ variable "elastic_ip_id" {
   description = "AWS elastic ip id, used in the NAT Gateway, to allow machines in the private subnet to access the internet"
   sensitive = true
 }
+
+variable "ssh_key_name" {
+  type = string
+  description = "SSH key pair name, used to connect to ec2 instances"
+  sensitive = true
+}
