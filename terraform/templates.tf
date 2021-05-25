@@ -4,25 +4,15 @@ locals {
   security_group_prefix  = "${var.prefix}-security-group"
 }
 
-# data "aws_ami" "influxdb" {
-#   most_recent = true
-#   owners      = ["self"]
+data "aws_ami" "influxdb" {
+  most_recent = true
+  owners      = ["self"]
 
-#   filter {
-#     name   = "name"
-#     values = ["${local.ami_prefix}-influxdb*"]
-#   }
-# }
-
-# data "aws_ami" "nodejs" {
-#   most_recent = true
-#   owners      = ["self"]
-
-#   filter {
-#     name   = "name"
-#     values = ["${local.ami_prefix}-nodejs*"]
-#   }
-# }
+  filter {
+    name   = "name"
+    values = ["${local.ami_prefix}-influxdb*"]
+  }
+}
 
 data "aws_ami" "docker" {
   most_recent = true
@@ -70,7 +60,7 @@ resource "aws_security_group" "http" {
 
   ingress {
     description      = "HTTP"
-    from_port        = 0
+    from_port        = 80
     to_port          = 80
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
@@ -84,39 +74,44 @@ resource "aws_security_group" "influxdb_http" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    description      = "HTTP (port 8096)"
-    from_port        = 0
-    to_port          = 8096
+    description      = "InfluxDB"
+    from_port        = 8086
+    to_port          = 8086
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
 }
 
-# resource "aws_launch_template" "nodejs" {
-#   name     = "${local.launch_template_prefix}-nodejs"
-#   image_id = data.aws_ami.nodejs.id
+resource "aws_security_group" "amqp" {
+  name        = "${local.security_group_prefix}-amqp"
+  description = "Allow AMQP inbound traffic"
+  vpc_id      = aws_vpc.main.id
 
-#   instance_type = "t2.micro"
+  ingress {
+    description      = "AMQP"
+    from_port        = 5671
+    to_port          = 5671
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+}
 
-#   vpc_security_group_ids = [
-#     aws_security_group.main.id,
-#     aws_security_group.http.id
-#   ]
-# }
+resource "aws_security_group" "amazonmq-console" {
+  name        = "${local.security_group_prefix}-amazonmq-console"
+  description = "Allow AMQP inbound traffic"
+  vpc_id      = aws_vpc.main.id
 
-# resource "aws_launch_template" "influxdb" {
-#   name     = "${local.launch_template_prefix}-influxdb"
-#   image_id = data.aws_ami.influxdb.id
-
-#   instance_type = "t2.micro"
-
-#   vpc_security_group_ids = [
-#     aws_security_group.main.id,
-#     aws_security_group.influxdb_http.id
-#   ]
-# }
-
+  ingress {
+    description      = "Amazon MQ web console"
+    from_port        = 8162
+    to_port          = 8162
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+}
 
 resource "aws_iam_role" "ec2_instance_profile" {
   name = "${var.prefix}-ec2-instance-profile"
@@ -173,4 +168,27 @@ resource "aws_launch_template" "docker" {
     aws_security_group.http.id,
     aws_security_group.ssh.id
   ]
+}
+
+resource "aws_launch_template" "influxdb" {
+  name     = "${local.launch_template_prefix}-influxdb"
+  image_id = data.aws_ami.influxdb.id
+
+  instance_type = "t2.micro"
+
+  vpc_security_group_ids = [
+    aws_security_group.main.id,
+    aws_security_group.ssh.id,
+    aws_security_group.influxdb_http.id
+  ]
+
+  user_data = base64encode(<<EOF
+    #!/bin/bash
+    until curl http://localhost:8086/ping
+    do
+      sleep 1
+    done
+    influx setup -u ${var.influxdb_username} -p ${var.influxdb_password} -t ${var.influxdb_token} -o ${var.influxdb_organization} -b ${var.influxdb_bucket} -r 1w -f
+    EOF
+  )
 }
