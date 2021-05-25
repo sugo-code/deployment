@@ -2,6 +2,8 @@ locals {
   vpc_cidr_block = "10.0.0.0/16"
   public_cidr_block = "10.0.0.0/24"
   private_cidr_block = "10.0.1.0/24"
+  private_2_cidr_block = "10.0.2.0/24"
+  private_3_cidr_block = "10.0.3.0/24"
 }
 
 # Define the VPC
@@ -34,8 +36,30 @@ resource "aws_subnet" "private" {
   vpc_id     = aws_vpc.main.id
   cidr_block = local.private_cidr_block
 
+  availability_zone = "${var.region}a"
+
   tags = {
     Name = "${var.prefix}-subnet-private"
+  }
+}
+
+resource "aws_subnet" "private_2" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = local.private_2_cidr_block
+
+  availability_zone = "${var.region}b"
+  tags = {
+    Name = "${var.prefix}-subnet-private-2"
+  }
+}
+
+resource "aws_subnet" "private_3" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = local.private_3_cidr_block
+
+  availability_zone = "${var.region}c"
+  tags = {
+    Name = "${var.prefix}-subnet-private-3"
   }
 }
 
