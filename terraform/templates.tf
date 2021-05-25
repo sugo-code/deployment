@@ -98,6 +98,36 @@ resource "aws_security_group" "amqp" {
   }
 }
 
+resource "aws_security_group" "postgresql" {
+  name        = "${local.security_group_prefix}-postgresql"
+  description = "Allow PostgreSQL inbound traffic"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description      = "PostgreSQL"
+    from_port        = 5432
+    to_port          = 5432
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+}
+
+resource "aws_security_group" "mongodb" {
+  name        = "${local.security_group_prefix}-mongodb"
+  description = "Allow MongoDB inbound traffic"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description      = "MongoDB"
+    from_port        = 27017
+    to_port          = 27017
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+}
+
 resource "aws_security_group" "amazonmq-console" {
   name        = "${local.security_group_prefix}-amazonmq-console"
   description = "Allow AMQP inbound traffic"
