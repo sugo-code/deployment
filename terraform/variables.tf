@@ -23,3 +23,62 @@ variable "ssh_key_name" {
   description = "SSH key pair name, used to connect to ec2 instances"
   sensitive = true
 }
+
+variable "rabbitmq_username" {
+  type = string
+  sensitive = true
+}
+
+variable "rabbitmq_password" {
+  type = string
+  sensitive = true
+}
+
+variable "influxdb_username" {
+  type = string
+  sensitive = true
+}
+variable "influxdb_password" {
+  type = string
+  sensitive = true
+}
+
+variable "influxdb_token" {
+  type = string
+  sensitive = true
+}
+
+variable "influxdb_organization" {
+  type = string
+  sensitive = true
+}
+
+variable "influxdb_bucket" {
+  type = string
+  sensitive = true
+}
+
+variable "postgresql_username" {
+  type = string
+  sensitive = true
+}
+
+variable "postgresql_password" {
+  type = string
+  sensitive = true
+}
+
+variable "postgresql_database" {
+  type = string
+  sensitive = true
+}
+
+variable "mongodb_username" {
+  type = string
+  sensitive = true
+}
+
+variable "mongodb_password" {
+  type = string
+  sensitive = true
+}
