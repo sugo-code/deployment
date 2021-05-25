@@ -99,7 +99,7 @@ resource "aws_instance" "api_gateway" {
   ami = aws_launch_template.docker.image_id
   instance_type = aws_launch_template.docker.instance_type
 
-  security_groups = aws_launch_template.docker.vpc_security_group_ids
+  vpc_security_group_ids = aws_launch_template.docker.vpc_security_group_ids
   subnet_id = aws_subnet.public.id
 
   iam_instance_profile = aws_launch_template.docker.iam_instance_profile[0].name
@@ -112,63 +112,95 @@ resource "aws_instance" "api_gateway" {
 }
 
 # Message Bus
+resource "aws_mq_broker" "message_bus" {
+  broker_name = "${var.prefix}-message-bus"
 
-# Missing permission mq:CreateBroker
-# resource "aws_mq_broker" "message_bus" {
-#   broker_name = "${var.prefix}-message-bus"
+  engine_type        = "RabbitMQ"
+  engine_version     = "3.8.11"
+  host_instance_type = "mq.t3.micro"
 
-#   engine_type        = "RabbitMQ"
-#   engine_version     = "3.8.11"
-#   host_instance_type = "mq.t2.micro"
+  subnet_ids = [aws_subnet.private.id]
+  security_groups = [
+    aws_security_group.amqp.id,
+    aws_security_group.amazonmq-console.id,
+    aws_security_group.main.id,
+  ]
 
-#   user {
-#     username = "test"
-#     password = "testtesttest"
-#   }
-# }
+  user {
+    username = var.rabbitmq_username
+    password = var.rabbitmq_password
+  }
+}
 
 # Databases
 
-#TODO: Specify VPC
-#TODO: If using docker add command to install and start influxdb and use port 80
-# resource "aws_instance" "data_db" {
-#   ami = aws_launch_template.influxdb.image_id
-#   instance_type = aws_launch_template.influxdb.instance_type
+resource "aws_instance" "data_db" {
+  ami = aws_launch_template.influxdb.image_id
+  instance_type = aws_launch_template.influxdb.instance_type
 
-#   security_groups = aws_launch_template.influxdb.security_group_names
-#   subnet_id = aws_subnet.private.id
+  vpc_security_group_ids = aws_launch_template.influxdb.vpc_security_group_ids
+  subnet_id = aws_subnet.public.id #TODO: Change to private
 
-#   tags = {
-#     Name = "${var.prefix}-data-db"
-#   }
-# }
+  key_name = var.ssh_key_name 
+  tags = {
+    Name = "${var.prefix}-data-db"
+  }
 
-#TODO: Specify VPC
-# resource "aws_db_instance" "parameters_db" {
-#   identifier = "${var.prefix}-parameters-db"
+  user_data = aws_launch_template.influxdb.user_data
+}
 
-#   allocated_storage    = 5
-#   engine               = "postgresql"
-#   engine_version       = "13.1"
-#   instance_class       = "db.t3.micro"
 
-#   name                 = "db"
-#   username             = "test"
-#   password             = "testtest"
+resource "aws_db_subnet_group" "main" {
+  name = "${var.prefix}-parameters-db-subnet-group"
+  subnet_ids = [aws_subnet.private.id, aws_subnet.private_2.id, aws_subnet.private_3.id]
+}
 
-#   skip_final_snapshot  = true
-# }
+resource "aws_db_instance" "parameters_db" {
+  identifier = "${var.prefix}-parameters-db"
 
-# hostname is undefined on the connection string??
-# This happens because docdb needs a vpc with 3 availability zones (will probably use docker-compose)
+  allocated_storage = 5
+  engine            = "postgres"
+  engine_version    = "13.1"
+  instance_class    = "db.t3.micro"
 
-#TODO: Specify VPC
-# resource "aws_docdb_cluster" "auth_db" {
-#   cluster_identifier      = "${var.prefix}-auth-db"
-#   engine                  = "docdb"
+  name              = var.postgresql_database
+  username          = var.postgresql_username
+  password          = var.postgresql_password
 
-#   master_username         = "test"
-#   master_password         = "testtest"
+  db_subnet_group_name = aws_db_subnet_group.main.name
+  vpc_security_group_ids = [
+    aws_security_group.postgresql.id, 
+    aws_security_group.main.id
+  ]
 
-#   skip_final_snapshot     = true
-# }
+  skip_final_snapshot  = true
+}
+
+
+resource "aws_docdb_subnet_group" "main" {
+  name = "${var.prefix}-auth-db-subnet-group"
+  subnet_ids = [aws_subnet.private.id, aws_subnet.private_2.id, aws_subnet.private_3.id]
+}
+
+resource "aws_docdb_cluster" "auth_db" {
+  cluster_identifier  = "${var.prefix}-auth-db"
+  engine              = "docdb"
+
+  master_username     = var.mongodb_username
+  master_password     = var.mongodb_password
+
+  db_subnet_group_name = aws_docdb_subnet_group.main.name
+  vpc_security_group_ids = [
+    aws_security_group.mongodb.id, 
+    aws_security_group.main.id
+  ]
+
+  skip_final_snapshot = true
+}
+
+resource "aws_docdb_cluster_instance" "main" {
+  count              = 1
+  identifier         = "${var.prefix}-auth-db"
+  cluster_identifier = aws_docdb_cluster.auth_db.id
+  instance_class     = "db.t3.medium"
+}
