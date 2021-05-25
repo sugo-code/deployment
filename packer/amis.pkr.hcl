@@ -7,21 +7,34 @@ locals {
 
 #TODO: Use docker instead of two different images
 
-source "amazon-ebs" "nodejs" {
-  ami_name      = "${local.name_prefix}-nodejs"
-  instance_type = "t2.micro"
+# source "amazon-ebs" "nodejs" {
+#   ami_name      = "${local.name_prefix}-nodejs"
+#   instance_type = "t2.micro"
 
-  region    = local.region
-  subnet_id = local.subnet_id
-  associate_public_ip_address = true
+#   region    = local.region
+#   subnet_id = local.subnet_id
+#   associate_public_ip_address = true
 
-  source_ami = local.source_ami
-  ssh_username = "ec2-user"
+#   source_ami = local.source_ami
+#   ssh_username = "ec2-user"
 
-}
+# }
 
-source "amazon-ebs" "influxdb" {
-  ami_name      = "${local.name_prefix}-influxdb"
+# source "amazon-ebs" "influxdb" {
+#   ami_name      = "${local.name_prefix}-influxdb"
+#   instance_type = "t2.micro"
+
+#   region    = local.region
+#   subnet_id = local.subnet_id
+#   associate_public_ip_address = true
+
+#   source_ami = local.source_ami
+#   ssh_username = "ec2-user"
+
+# }
+
+source "amazon-ebs" "docker" {
+  ami_name      = "${local.name_prefix}-docker"
   instance_type = "t2.micro"
 
   region    = local.region
@@ -35,22 +48,28 @@ source "amazon-ebs" "influxdb" {
 
 build {
   sources = [
-    "source.amazon-ebs.nodejs",
-    "source.amazon-ebs.influxdb"
+    # "source.amazon-ebs.nodejs",
+    # "source.amazon-ebs.influxdb"
+    "source.amazon-ebs.docker"
   ]
 
   provisioner "shell" {
-    except = ["amazon-ebs.influxdb"]
+    # except = ["amazon-ebs.influxdb"]
     script = "codedeploy.sh"
   }
 
   provisioner "shell" {
-    only = ["amazon-ebs.nodejs"]
-    script = "nodejs.sh"
+    only = ["amazon-ebs.docker"]
+    script = "docker.sh"
   }
 
-  provisioner "shell" {
-    only = ["amazon-ebs.influxdb"]
-    script = "influxdb.sh"
-  }
+  # provisioner "shell" {
+  #   only = ["amazon-ebs.nodejs"]
+  #   script = "nodejs.sh"
+  # }
+
+  # provisioner "shell" {
+  #   only = ["amazon-ebs.influxdb"]
+  #   script = "influxdb.sh"
+  # }
 }

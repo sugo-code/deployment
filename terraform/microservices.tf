@@ -45,17 +45,17 @@ resource "aws_s3_bucket" "web_app" {
 
 # APIs
 
-resource "aws_instance" "auth_api" {
-  ami = aws_launch_template.nodejs.image_id
-  instance_type = aws_launch_template.nodejs.instance_type
+# resource "aws_instance" "auth_api" {
+#   ami = aws_launch_template.nodejs.image_id
+#   instance_type = aws_launch_template.nodejs.instance_type
 
-  security_groups = aws_launch_template.nodejs.security_group_names
-  subnet_id = aws_subnet.private.id
+#   security_groups = aws_launch_template.nodejs.security_group_names
+#   subnet_id = aws_subnet.private.id
 
-  tags = {
-    Name = "${var.prefix}-auth-api"
-  }
-}
+#   tags = {
+#     Name = "${var.prefix}-auth-api"
+#   }
+# }
 
 # resource "aws_instance" "data_api" {
 #   ami = aws_launch_template.nodejs.image_id
@@ -95,17 +95,21 @@ resource "aws_instance" "auth_api" {
 
 # Gateway
 
-# resource "aws_instance" "api_gateway" {
-#   ami = aws_launch_template.nodejs.image_id
-#   instance_type = aws_launch_template.nodejs.instance_type
+resource "aws_instance" "api_gateway" {
+  ami = aws_launch_template.docker.image_id
+  instance_type = aws_launch_template.docker.instance_type
 
-#   security_groups = aws_launch_template.nodejs.security_group_names
-#   subnet_id = aws_subnet.private.id
+  security_groups = aws_launch_template.docker.vpc_security_group_ids
+  subnet_id = aws_subnet.public.id
 
-#   tags = {
-#     Name = "${var.prefix}-api-gateway"
-#   }
-# }
+  iam_instance_profile = aws_launch_template.docker.iam_instance_profile[0].name
+
+  key_name = var.ssh_key_name
+
+  tags = {
+    Name = "${var.prefix}-api-gateway"
+  }
+}
 
 # Message Bus
 
@@ -126,6 +130,7 @@ resource "aws_instance" "auth_api" {
 # Databases
 
 #TODO: Specify VPC
+#TODO: If using docker add command to install and start influxdb and use port 80
 # resource "aws_instance" "data_db" {
 #   ami = aws_launch_template.influxdb.image_id
 #   instance_type = aws_launch_template.influxdb.instance_type
