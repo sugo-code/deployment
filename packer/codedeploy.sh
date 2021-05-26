@@ -14,3 +14,5 @@ sudo chown ec2-user:ec2-user -R /var/log/aws/
 sudo systemctl daemon-reload
 sudo systemctl start codedeploy-agent
 sudo systemctl enable codedeploy-agent
+
+sudo rm install

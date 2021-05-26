@@ -47,12 +47,6 @@ build {
     script = "docker.sh"
   }
 
-  provisioner "file" {
-    only = ["amazon-ebs.influxdb"]
-    source = "influxdb.env"
-    destination = "/home/ec2-user/.env"
-  }
-
   provisioner "shell" {
     only = ["amazon-ebs.influxdb"]
     script = "influxdb.sh"
