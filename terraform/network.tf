@@ -77,7 +77,7 @@ resource "aws_internet_gateway" "main" {
 
 resource "aws_nat_gateway" "main" {
   allocation_id = var.elastic_ip_id
-  subnet_id     = aws_subnet.private.id
+  subnet_id     = aws_subnet.public.id
 
   tags = {
     Name = "${var.prefix}-nat-gateway"
