@@ -82,3 +82,23 @@ variable "mongodb_password" {
   type = string
   sensitive = true
 }
+
+variable "mongodb_database" {
+  type = string
+  sensitive = true
+}
+
+variable "jwt_encryption_secret" {
+  type = string
+  sensitive = true
+}
+
+variable "vonage_api_key" {
+  type = string
+  sensitive = true
+}
+
+variable "vonage_api_secret" {
+  type = string
+  sensitive = true
+}
