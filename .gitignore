@@ -4,3 +4,7 @@
 *.tfstate.*
 
 terraform.tfvars
+auth-roles.json
+auth-users.json
+parameters-tables.sql
+parameters-data.sql

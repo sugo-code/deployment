@@ -4,6 +4,16 @@ locals {
   security_group_prefix  = "${var.prefix}-security-group"
 }
 
+data "aws_ami" "amazon_linux_2" {
+  most_recent = true
+  owners = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-ebs"]
+  }
+}
+
 data "aws_ami" "influxdb" {
   most_recent = true
   owners      = ["self"]
