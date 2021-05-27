@@ -1,3 +1,8 @@
+output "service_private_key" {
+  value = tls_private_key.service_key.private_key_pem
+  sensitive = true
+}
+
 output "web_app_bucket" {
   value = aws_s3_bucket.web_app.bucket
 }

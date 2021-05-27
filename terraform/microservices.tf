@@ -109,7 +109,7 @@ resource "aws_instance" "auth_api" {
 
   iam_instance_profile = aws_launch_template.docker.iam_instance_profile[0].name
 
-  key_name = var.ssh_key_name
+  key_name = aws_key_pair.service_key_pair.key_name
 
   tags = {
     Name = "${var.prefix}-auth-api"
@@ -125,7 +125,7 @@ resource "aws_instance" "data_api" {
 
   iam_instance_profile = aws_launch_template.docker.iam_instance_profile[0].name
 
-  key_name = var.ssh_key_name
+  key_name = aws_key_pair.service_key_pair.key_name
 
   tags = {
     Name = "${var.prefix}-data-api"
@@ -141,7 +141,7 @@ resource "aws_instance" "alarms_api" {
 
   iam_instance_profile = aws_launch_template.docker.iam_instance_profile[0].name
 
-  key_name = var.ssh_key_name
+  key_name = aws_key_pair.service_key_pair.key_name
 
   tags = {
     Name = "${var.prefix}-alarms-api"
@@ -157,7 +157,7 @@ resource "aws_instance" "realtime_api" {
 
   iam_instance_profile = aws_launch_template.docker.iam_instance_profile[0].name
 
-  key_name = var.ssh_key_name
+  key_name = aws_key_pair.service_key_pair.key_name
 
   tags = {
     Name = "${var.prefix}-realtime-api"
@@ -173,7 +173,7 @@ resource "aws_instance" "api_gateway" {
 
   iam_instance_profile = aws_launch_template.docker.iam_instance_profile[0].name
 
-  key_name = var.ssh_key_name
+  key_name = aws_key_pair.service_key_pair.key_name
 
   tags = {
     Name = "${var.prefix}-api-gateway"
@@ -210,7 +210,7 @@ resource "aws_instance" "data_db" {
   vpc_security_group_ids = aws_launch_template.influxdb.vpc_security_group_ids
   subnet_id = aws_subnet.private.id
 
-  key_name = var.ssh_key_name 
+  key_name = aws_key_pair.service_key_pair.key_name 
   tags = {
     Name = "${var.prefix}-data-db"
   }

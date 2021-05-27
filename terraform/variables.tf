@@ -18,12 +18,6 @@ variable "elastic_ip_id" {
   sensitive = true
 }
 
-variable "ssh_key_name" {
-  type = string
-  description = "SSH key pair name, used to connect to ec2 instances"
-  sensitive = true
-}
-
 variable "rabbitmq_username" {
   type = string
   sensitive = true
