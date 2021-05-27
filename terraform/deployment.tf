@@ -166,6 +166,19 @@ resource "aws_s3_bucket" "secrets" {
   }
 }
 
+resource "aws_s3_bucket_object" "web_app_secrets" {
+  key    = "web-app/.env"
+  bucket = aws_s3_bucket.secrets.id
+ 
+  # content = <<EOT
+  #   REACT_APP_API_URL=https://${aws_lb.api_gateway.dns_name}/api/v1
+  #   EOT
+
+  content = <<EOT
+    REACT_APP_API_URL=http://${aws_instance.api_gateway.public_dns}/api/v1
+    EOT
+}
+
 resource "aws_s3_bucket_object" "api_gateway_secrets" {
   key    = "api-gateway/.env"
   bucket = aws_s3_bucket.secrets.id
