@@ -29,24 +29,26 @@ resource "aws_instance" "service_machine" {
 
     cd /home/ec2-user
 
-    cat > ${aws_key_pair.service_key_pair.key_name} ${tls_private_key.service_key.private_key_pem}
+    cat > ${aws_key_pair.service_key_pair.key_name}.pem <<EOL
+${tls_private_key.service_key.private_key_pem}
+EOL
     chmod 400 ${aws_key_pair.service_key_pair.key_name}
     chown ec2-user ${aws_key_pair.service_key_pair.key_name}
 
     cat > auth-roles.json <<EOL
-    ${file("auth-roles.json")}
+${file("auth-roles.json")}
 EOL
 
     cat > auth-users.json <<EOL
-      ${file("auth-users.json")}
+${file("auth-users.json")}
 EOL
 
     cat > parameters-tables.sql <<EOL
-      ${file("parameters-tables.sql")}
+${file("parameters-tables.sql")}
 EOL
 
     cat > parameters-data.sql <<EOL
-      ${file("parameters-data.sql")}
+${file("parameters-data.sql")}
 EOL
 
     wget https://downloads.mongodb.com/compass/mongodb-mongosh-0.13.2.el7.x86_64.rpm
@@ -57,13 +59,13 @@ EOL
 
     aws docdb wait db-instance-available --db-instance-identifier ${aws_docdb_cluster_instance.auth_db.0.identifier}
     echo ${local.mongodb_url} > mongodb_url
-    mongosh $(echo mongodb_url) --eval 'db.roles.insertMany(${file("auth-roles.json")})' > auth-roles.log 2>&1
-    mongosh $(echo mongodb_url) --eval 'db.users.insertMany(${file("auth-users.json")})' > auth-users.log 2>&1
+    mongosh $(cat mongodb_url) --eval 'db.roles.insertMany(${file("auth-roles.json")})' > auth-roles.log 2>&1
+    mongosh $(cat mongodb_url) --eval 'db.users.insertMany(${file("auth-users.json")})' > auth-users.log 2>&1
 
     aws rds wait db-instance-available --db-instance-identifier ${aws_db_instance.parameters_db.identifier}
     echo ${local.postgresql_url} > postgresql_url
-    tr -d '\n' < parameters-tables.sql | psql $(echo postgresql_url) > parameters-tables.log 2>&1
-    tr -d '\n' < parameters-data.sql | psql $(echo postgresql_url) > parameters-data.log 2>&1
+    tr -d '\n' < parameters-tables.sql | psql $(cat postgresql_url) > parameters-tables.log 2>&1
+    tr -d '\n' < parameters-data.sql   | psql $(cat postgresql_url) > parameters-data.log   2>&1
 
     sudo shutdown -h now
     EOF
