@@ -171,6 +171,8 @@ resource "aws_s3_bucket_object" "api_gateway_secrets" {
   bucket = aws_s3_bucket.secrets.id
  
   content = <<EOT
+    LOG_REGION=${var.region}
+    LOG_GROUP=${aws_cloudwatch_log_group.api_gateway.name}
     DATA_API_URL=http://${aws_instance.data_api.private_dns}
     AUTH_API_URL=http://${aws_instance.auth_api.private_dns}
     REALTIME_API_URL=http://${aws_instance.realtime_api.private_dns}
@@ -182,6 +184,8 @@ resource "aws_s3_bucket_object" "realtime_api_secrets" {
   bucket = aws_s3_bucket.secrets.id
  
   content = <<EOT
+    LOG_REGION=${var.region}
+    LOG_GROUP=${aws_cloudwatch_log_group.realtime_api.name}
     RABBITMQ_URL=${local.rabbitmq_url}
     EOT
 }
@@ -191,6 +195,8 @@ resource "aws_s3_bucket_object" "auth_api_secrets" {
   bucket = aws_s3_bucket.secrets.id
  
   content = <<EOT
+    LOG_REGION=${var.region}
+    LOG_GROUP=${aws_cloudwatch_log_group.auth_api.name}
     MONGO_URI=${local.mongodb_url}
     MONGO_DB=${var.mongodb_database}
     RABBITMQ_URL=${local.rabbitmq_url}
@@ -203,6 +209,8 @@ resource "aws_s3_bucket_object" "alarms_api_secrets" {
   bucket = aws_s3_bucket.secrets.id
  
   content = <<EOT
+    LOG_REGION=${var.region}
+    LOG_GROUP=${aws_cloudwatch_log_group.alarms_api.name}
     VONAGE_API_KEY=${var.vonage_api_key}
     VONAGE_API_SECRET=${var.vonage_api_secret}
     RABBITMQ_URL=${local.rabbitmq_url}
@@ -214,6 +222,8 @@ resource "aws_s3_bucket_object" "data_api_secrets" {
   bucket = aws_s3_bucket.secrets.id
  
   content = <<EOT
+    LOG_REGION=${var.region}
+    LOG_GROUP=${aws_cloudwatch_log_group.data_api.name}
     POSTGRESQL_URL=${local.postgresql_url}
     INFLUXDB_URL=http://${aws_instance.data_db.private_dns}:8086
     INFLUXDB_ORG=${var.influxdb_organization}

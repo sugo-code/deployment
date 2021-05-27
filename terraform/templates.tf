@@ -171,15 +171,32 @@ resource "aws_iam_role" "ec2_instance_profile" {
   })
 
   inline_policy {
-    name = "${var.prefix}-ec2-instance-profile-policy"
+    name = "${var.prefix}-ec2-instance-profile-codedeploy-policy"
     policy = jsonencode({
       Version = "2012-10-17"
       Statement = [
         {
           Effect = "Allow"
           Action = [
-            "s3:Get*",
+            "s3:Get*",  
             "s3:List*"
+          ]
+          Resource = "*"
+        }
+      ]
+    })
+  }
+
+  inline_policy {
+    name = "${var.prefix}-ec2-instance-profile-cloudwatch-policy"
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Effect = "Allow"
+          Action = [
+            "logs:CreateLogStream",
+            "logs:PutLogEvents"
           ]
           Resource = "*"
         }

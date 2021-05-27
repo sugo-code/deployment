@@ -199,6 +199,10 @@ resource "aws_mq_broker" "message_bus" {
     username = var.rabbitmq_username
     password = var.rabbitmq_password
   }
+
+  logs {
+    general = true
+  }
 }
 
 # Databases
@@ -243,6 +247,7 @@ resource "aws_db_instance" "parameters_db" {
   ]
 
   skip_final_snapshot  = true
+  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
 }
 
 
@@ -277,6 +282,7 @@ resource "aws_docdb_cluster" "auth_db" {
   ]
 
   skip_final_snapshot = true
+  enabled_cloudwatch_logs_exports = ["audit", "profiler"]
 }
 
 resource "aws_docdb_cluster_instance" "auth_db" {
