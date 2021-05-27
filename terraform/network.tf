@@ -1,6 +1,7 @@
 locals {
   vpc_cidr_block = "10.0.0.0/16"
   public_cidr_block = "10.0.0.0/24"
+  #public_2_cidr_block = "10.0.4.0/24"
   private_cidr_block = "10.0.1.0/24"
   private_2_cidr_block = "10.0.2.0/24"
   private_3_cidr_block = "10.0.3.0/24"
@@ -25,12 +26,25 @@ resource "aws_subnet" "public" {
   vpc_id     = aws_vpc.main.id
   cidr_block = local.public_cidr_block
 
+  availability_zone = "${var.region}a"
   map_public_ip_on_launch = true
 
   tags = {
     Name = "${var.prefix}-subnet-public"
   }
 }
+
+# resource "aws_subnet" "public_2" {
+#   vpc_id     = aws_vpc.main.id
+#   cidr_block = local.public_2_cidr_block
+
+#   availability_zone = "${var.region}b"
+#   map_public_ip_on_launch = true
+
+#   tags = {
+#     Name = "${var.prefix}-subnet-public-2"
+#   }
+# }
 
 resource "aws_subnet" "private" {
   vpc_id     = aws_vpc.main.id
@@ -118,6 +132,11 @@ resource "aws_route_table_association" "public" {
   subnet_id      = aws_subnet.public.id
   route_table_id = aws_route_table.public.id
 }
+
+# resource "aws_route_table_association" "public_2" {
+#   subnet_id      = aws_subnet.public_2.id
+#   route_table_id = aws_route_table.public.id
+# }
 
 resource "aws_main_route_table_association" "main" {
   vpc_id         = aws_vpc.main.id
