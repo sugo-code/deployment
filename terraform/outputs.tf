@@ -3,16 +3,24 @@ output "service_private_key" {
   sensitive = true
 }
 
+# output "web_app_cdn_endpoint" {
+#   value = aws_cloudfront_distribution.web_app.domain_name
+# }
+
+output "web_app_bucket_endpoint" {
+  value = aws_s3_bucket.web_app.website_endpoint
+}
+
+# output "api_gateway_load_balancer_endpoint" {
+#   value = aws_lb.api_gateway.dns_name
+# }
+
+output "api_gateway_instance_endpoint" {
+  value = aws_instance.api_gateway.public_dns
+}
+
 output "web_app_bucket" {
   value = aws_s3_bucket.web_app.bucket
-}
-
-output "web_app_cdn_endpoint" {
-  value = aws_cloudfront_distribution.web_app.domain_name
-}
-
-output "web_app_website_endpoint" {
-  value = aws_s3_bucket.web_app.website_endpoint
 }
 
 output "auth_api_codedeploy_app" {
