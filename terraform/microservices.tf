@@ -16,59 +16,62 @@
 # }
 
 # Frontend
-# TODO: Guess what it's not working
-resource "aws_cloudfront_distribution" "web_app" {
-  origin {
-    domain_name = "${aws_s3_bucket.web_app.website_endpoint}"
-    origin_id = "${aws_s3_bucket.web_app.bucket}"
+# resource "aws_cloudfront_distribution" "web_app" {
+#   enabled = true
+#   price_class = "PriceClass_100"
 
-    custom_origin_config {
-      http_port = 80
-      https_port = 443
-      origin_protocol_policy = "https-only"
-      origin_ssl_protocols = ["TLSv1", "TLSv1.1", "TLSv1.2"]
-    }
-  }
+#   default_root_object = "index.html"
 
-  enabled = true
-  default_root_object = "index.html"
+#   origin {
+#     domain_name = aws_s3_bucket.web_app.website_endpoint
+#     origin_id = "origin-bucket-${aws_s3_bucket.web_app.id}"
 
-  custom_error_response {
-    error_code    = 404
-    response_code = 200
-    response_page_path = "/index.html"
-  }
+#     custom_origin_config {
+#       origin_protocol_policy = "http-only"
+#       http_port            = 80
+#       https_port           = 443
+#       origin_ssl_protocols = ["TLSv1.2", "TLSv1.1", "TLSv1"]
+#     }
+#   }
 
-  default_cache_behavior {
-    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods   = ["GET", "HEAD"]
-    target_origin_id = aws_s3_bucket.web_app.bucket
 
-    forwarded_values {
-      query_string = true
-      cookies {
-        forward = "all"
-      }
-    }
+#   custom_error_response {
+#     error_code    = 404
+#     response_code = 200
+#     response_page_path = "/index.html"
+#   }
 
-    viewer_protocol_policy = "allow-all"
-    min_ttl = 0
-    default_ttl = 3600
-    max_ttl = 86400
-  }
+#   default_cache_behavior {
+#     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+#     cached_methods   = ["GET", "HEAD", "OPTIONS"]
+#     target_origin_id = "origin-bucket-${aws_s3_bucket.web_app.id}"
 
-  price_class = "PriceClass_100"
+#     min_ttl = 0
+#     default_ttl = 300
+#     max_ttl = 1200
 
-  restrictions {
-    geo_restriction {
-      restriction_type = "none"
-    }
-  }
+#     viewer_protocol_policy = "redirect-to-https"
+#     compress = true
 
-  viewer_certificate {
-    cloudfront_default_certificate = true
-  }
-}
+#     forwarded_values {
+#       query_string = true
+#       cookies {
+#         forward = "all"
+#       }
+#     }
+
+#   }
+
+#   viewer_certificate {
+#     cloudfront_default_certificate = true
+#   }
+
+#   restrictions {
+#     geo_restriction {
+#       restriction_type = "none"
+#     }
+#   }
+# }
 
 resource "aws_s3_bucket" "web_app" {
   bucket = "${var.prefix}-bucket-web-app"
@@ -164,6 +167,42 @@ resource "aws_instance" "realtime_api" {
   }
 }
 
+# Api Gateway
+# resource "aws_lb" "api_gateway" {
+#   name               = "${var.prefix}-api-gateway"
+#   internal           = false
+#   load_balancer_type = "application"
+#   subnets            = [aws_subnet.public.id, aws_subnet.public_2.id]
+#   security_groups = [ 
+#     aws_security_group.main.id,
+#     aws_security_group.https.id
+#   ]
+# }
+
+# resource "aws_lb_target_group" "main" {
+#   name     = "${var.prefix}-api-gateway"
+#   port     = 80
+#   protocol = "HTTP"
+#   vpc_id   = aws_vpc.main.id
+# }
+# resource "aws_lb_target_group_attachment" "main" {
+#   target_group_arn = aws_lb_target_group.main.arn
+#   target_id        = aws_instance.api_gateway.id
+# }
+
+# resource "aws_lb_listener" "main" {
+#   load_balancer_arn = aws_lb.api_gateway.arn
+#   port              = "443"
+#   protocol          = "HTTPS"
+#   ssl_policy        = "ELBSecurityPolicy-2016-08"
+#   certificate_arn   = aws_iam_server_certificate.main.arn
+
+#   default_action {
+#     type             = "forward"
+#     target_group_arn = aws_lb_target_group.main.arn
+#   }
+# }
+
 resource "aws_instance" "api_gateway" {
   ami = aws_launch_template.docker.image_id
   instance_type = aws_launch_template.docker.instance_type
@@ -198,10 +237,6 @@ resource "aws_mq_broker" "message_bus" {
   user {
     username = var.rabbitmq_username
     password = var.rabbitmq_password
-  }
-
-  logs {
-    general = true
   }
 }
 
