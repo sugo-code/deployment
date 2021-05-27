@@ -78,6 +78,21 @@ resource "aws_security_group" "http" {
   }
 }
 
+# resource "aws_security_group" "https" {
+#   name        = "${local.security_group_prefix}-https"
+#   description = "Allow HTTPS inbound traffic"
+#   vpc_id      = aws_vpc.main.id
+
+#   ingress {
+#     description      = "HTTPS"
+#     from_port        = 443
+#     to_port          = 443
+#     protocol         = "tcp"
+#     cidr_blocks      = ["0.0.0.0/0"]
+#     ipv6_cidr_blocks = ["::/0"]
+#   }
+# }
+
 resource "aws_security_group" "influxdb_http" {
   name        = "${local.security_group_prefix}-influxdb-http"
   description = "Allow SSH inbound traffic"
@@ -249,3 +264,31 @@ resource "aws_launch_template" "influxdb" {
     EOF
   )
 }
+
+# resource "tls_private_key" "main" {
+#   algorithm = "RSA"
+# }
+
+# resource "tls_self_signed_cert" "main" {
+#   key_algorithm   = "RSA"
+#   private_key_pem = tls_private_key.main.private_key_pem
+
+#   subject {
+#     common_name  = aws_lb.api_gateway.dns_name
+#     organization = "Sioux Silos"
+#   }
+
+#   validity_period_hours = 12
+
+#   allowed_uses = [
+#     "key_encipherment",
+#     "digital_signature",
+#     "server_auth",
+#   ]
+# }
+
+# resource "aws_iam_server_certificate" "main" {
+#   name             = "${var.prefix}-certificate"
+#   certificate_body = tls_self_signed_cert.main.cert_pem
+#   private_key      = tls_private_key.main.private_key_pem
+# }
